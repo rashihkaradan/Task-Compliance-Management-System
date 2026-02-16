@@ -1,8 +1,8 @@
 app_name = "status"
 app_title = "status"
-app_publisher = "rashih"
-app_description = "for status"
-app_email = "rashih@gmail.com"
+app_publisher = "gg"
+app_description = "saa"
+app_email = "ras@gmail.com"
 app_license = "mit"
 
 # Apps
