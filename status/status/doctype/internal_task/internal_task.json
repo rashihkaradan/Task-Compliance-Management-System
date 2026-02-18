@@ -1,0 +1,161 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "task_category-TASK-.#####",
+ "creation": "2026-02-17 10:11:23.372198",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_lao7",
+  "task_title",
+  "task_catagory",
+  "description",
+  "priority",
+  "requsted_by",
+  "department",
+  "requires_approval",
+  "status",
+  "column_break_idak",
+  "assigned_executor",
+  "sla_start_date",
+  "sla_due_date",
+  "actual_complition_date",
+  "section_break_uvtk",
+  "approvel_remarks",
+  "compliance_notes",
+  "section_break_inoq",
+  "work_logs"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_lao7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "task_title",
+   "fieldtype": "Data",
+   "label": "Task Title"
+  },
+  {
+   "fieldname": "task_catagory",
+   "fieldtype": "Select",
+   "label": "Task Catagory",
+   "options": "ops\nfinans\nlegal\nit"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nCritical"
+  },
+  {
+   "fieldname": "requsted_by",
+   "fieldtype": "Link",
+   "label": "Requsted by",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "default": "0",
+   "fieldname": "requires_approval",
+   "fieldtype": "Check",
+   "label": "Requires Approval"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nPending Review\nApproved\nRejected\nIn Execution\nCompleted\nClosed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_idak",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assigned_executor",
+   "fieldtype": "Link",
+   "label": "Assigned Executor",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "sla_start_date",
+   "fieldtype": "Date",
+   "label": "Sla Start Date"
+  },
+  {
+   "fieldname": "sla_due_date",
+   "fieldtype": "Date",
+   "label": "Sla Due Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "actual_complition_date",
+   "fieldtype": "Date",
+   "label": "Actual Complition Date"
+  },
+  {
+   "fieldname": "section_break_uvtk",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "approvel_remarks",
+   "fieldtype": "Small Text",
+   "label": "Approvel Remarks"
+  },
+  {
+   "fieldname": "compliance_notes",
+   "fieldtype": "Small Text",
+   "label": "Compliance Notes"
+  },
+  {
+   "fieldname": "section_break_inoq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "work_logs",
+   "fieldtype": "Table",
+   "label": "Work Logs",
+   "options": "Task Work Log"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-02-17 14:55:00.113916",
+ "modified_by": "Administrator",
+ "module": "status",
+ "name": "Internal Task",
+ "naming_rule": "Expression",
+ "owner": "21mcs21@meaec.edu.in",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
