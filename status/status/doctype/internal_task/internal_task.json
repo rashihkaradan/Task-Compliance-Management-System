@@ -11,7 +11,7 @@
   "task_catagory",
   "description",
   "priority",
-  "requsted_by",
+  "requested_by",
   "department",
   "requires_approval",
   "status",
@@ -20,6 +20,7 @@
   "sla_start_date",
   "sla_due_date",
   "actual_complition_date",
+  "sla_breached",
   "section_break_uvtk",
   "approvel_remarks",
   "compliance_notes",
@@ -34,30 +35,32 @@
   {
    "fieldname": "task_title",
    "fieldtype": "Data",
-   "label": "Task Title"
+   "in_list_view": 1,
+   "label": "Task Title",
+   "reqd": 1
   },
   {
    "fieldname": "task_catagory",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Task Catagory",
-   "options": "ops\nfinans\nlegal\nit"
+   "options": "ops\nfinans\nlegal\nit",
+   "reqd": 1
   },
   {
    "fieldname": "description",
    "fieldtype": "Text",
-   "label": "Description"
+   "in_list_view": 1,
+   "label": "Description",
+   "reqd": 1
   },
   {
    "fieldname": "priority",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Priority",
-   "options": "Low\nMedium\nHigh\nCritical"
-  },
-  {
-   "fieldname": "requsted_by",
-   "fieldtype": "Link",
-   "label": "Requsted by",
-   "options": "Employee"
+   "options": "Low\nMedium\nHigh\nCritical",
+   "reqd": 1
   },
   {
    "fieldname": "department",
@@ -76,7 +79,8 @@
    "fieldtype": "Select",
    "label": "Status",
    "options": "Draft\nPending Review\nApproved\nRejected\nIn Execution\nCompleted\nClosed",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "fieldname": "column_break_idak",
@@ -126,13 +130,28 @@
    "fieldname": "work_logs",
    "fieldtype": "Table",
    "label": "Work Logs",
-   "options": "Task Work Log"
+   "options": "Task Work Log",
+   "reqd": 1
+  },
+  {
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "label": "Requsted by",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "sla_breached",
+   "fieldtype": "Check",
+   "label": "SLA Breached",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-17 14:55:00.113916",
+ "modified": "2026-02-18 17:37:57.465000",
  "modified_by": "Administrator",
  "module": "status",
  "name": "Internal Task",

@@ -1,7 +1,7 @@
 import frappe
 from frappe.model.document import Document
-from datetime import timedelta, date
-from frappe.utils import get_datetime
+from datetime import timedelta
+from frappe.utils import get_datetime, getdate, today
 
 
 class InternalTask(Document):
@@ -13,20 +13,24 @@ class InternalTask(Document):
         self.prevent_completion_without_logs()
         self.prevent_core_edit_after_approval()
         self.check_maker_checker()
+    
+    def before_save(self):
+        self.set_sla_breach()
+
 
     # 1️⃣ SLA calculation
     def set_sla_due_date(self):
         if self.priority and not self.sla_due_date:
-            today = date.today()
+            base_date = getdate(self.sla_start_date) if self.sla_start_date else getdate(today())
 
             if self.priority == "Critical":
-                self.sla_due_date = today
+                self.sla_due_date = base_date
             elif self.priority == "High":
-                self.sla_due_date = today + timedelta(days=1)
+                self.sla_due_date = base_date + timedelta(days=1)
             elif self.priority == "Medium":
-                self.sla_due_date = today + timedelta(days=3)
+                self.sla_due_date = base_date + timedelta(days=3)
             elif self.priority == "Low":
-                self.sla_due_date = today + timedelta(days=5)
+                self.sla_due_date = base_date + timedelta(days=5)
 
     # 2️⃣ Work log duration per row
     def calculate_worklog_duration(self):
@@ -40,11 +44,7 @@ class InternalTask(Document):
 
     # 3️⃣ Total effort sum
     def calculate_total_effort(self):
-        total = 0
-        for row in self.work_logs:
-            if row.duration:
-                total += row.duration
-        self.total_effort = total
+        self.total_effort = sum((row.duration or 0) for row in self.work_logs)
 
     # 4️⃣ Prevent completion without logs
     def prevent_completion_without_logs(self):
@@ -71,11 +71,15 @@ class InternalTask(Document):
 
     # 6️⃣ Maker-Checker rule
     def check_maker_checker(self):
-        if self.status == "Approved":
-            if self.requested_by and frappe.session.user:
-                requester_user = frappe.db.get_value(
-                    "Employee", self.requested_by, "user_id"
-                )
+        if self.status == "Approved" and self.requested_by:
+            requester_user = frappe.db.get_value("Employee", self.requested_by, "user_id")
+            if requester_user == frappe.session.user:
+                frappe.throw("Maker cannot approve their own task")
 
-                if requester_user == frappe.session.user:
-                    frappe.throw("Maker cannot approve their own task")
+    # 7️⃣ SLA Breach flag
+    def set_sla_breach(self):
+        self.sla_breached = 0  # default reset
+
+        if self.sla_due_date and self.status not in ["Completed", "Closed"]:
+            if getdate(today()) > getdate(self.sla_due_date):
+                self.sla_breached = 1
