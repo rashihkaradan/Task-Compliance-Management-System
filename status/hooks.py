@@ -10,6 +10,14 @@ app_license = "mit"
 
 # required_apps = []
 
+
+scheduler_events = {
+    "daily": [
+        "status.status.doctype.internal_task.internal_task.update_sla_breach_for_tasks"
+    ]
+}
+
+
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
 # 	{
