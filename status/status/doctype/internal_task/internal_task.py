@@ -4,28 +4,6 @@ from datetime import timedelta
 from frappe.utils import get_datetime, getdate, today
 
 
-def update_sla_breach_for_tasks():
-    tasks = frappe.get_all(
-        "Internal Task",
-        fields=["name", "sla_due_date", "status"]
-    )
-
-    today_date = getdate(today())
-
-    for t in tasks:
-        breached = 0
-
-        if t.sla_due_date and t.status not in ["Completed", "Closed"]:
-            if today_date >= getdate(t.sla_due_date):
-                breached = 1
-
-        frappe.db.set_value(
-            "Internal Task",
-            t.name,
-            "sla_breached",
-            breached
-        )
-
 
 
 class InternalTask(Document):
@@ -107,3 +85,27 @@ class InternalTask(Document):
         if self.sla_due_date and self.status not in ["Completed", "Closed"]:
             if getdate(today()) >= getdate(self.sla_due_date):
                 self.sla_breached = 1
+
+def update_sla_breach_for_tasks():
+    from frappe.utils import getdate, today
+
+    tasks = frappe.get_all(
+        "Internal Task",
+        fields=["name", "sla_due_date", "status"]
+    )
+
+    today_date = getdate(today())
+
+    for t in tasks:
+        breached = 0
+
+        if t.sla_due_date and t.status not in ["Completed", "Closed"]:
+            if today_date >= getdate(t.sla_due_date):
+                breached = 1
+
+        frappe.db.set_value(
+            "Internal Task",
+            t.name,
+            "sla_breached",
+            breached
+        )
