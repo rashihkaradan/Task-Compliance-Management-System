@@ -18,6 +18,11 @@ scheduler_events = {
 }
 
 
+permission_query_conditions = {
+    "Internal Task": "status.status.doctype.internal_task.internal_task.get_permission_query_conditions"
+}
+
+
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [

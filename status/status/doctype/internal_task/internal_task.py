@@ -4,21 +4,30 @@ from datetime import timedelta
 from frappe.utils import get_datetime, getdate, today
 
 
-
-
 class InternalTask(Document):
 
+    def before_insert(self):
+        self.set_requested_by()
+
     def validate(self):
+        self.set_requested_by()
         self.set_sla_due_date()
         self.calculate_worklog_duration()
         self.calculate_total_effort()
         self.prevent_completion_without_logs()
         self.prevent_core_edit_after_approval()
         self.check_maker_checker()
-    
-    def before_save(self):
-        self.set_sla_breach()
 
+    # ⭐ Auto-fill requester from logged-in user
+    def set_requested_by(self):
+        if not self.requested_by:
+            employee = frappe.db.get_value(
+                "Employee",
+                {"user_id": frappe.session.user},
+                "name"
+            )
+            if employee:
+                self.requested_by = employee
 
     # 1️⃣ SLA calculation
     def set_sla_due_date(self):
@@ -40,7 +49,6 @@ class InternalTask(Document):
             if row.start_time and row.end_time:
                 start = get_datetime(row.start_time)
                 end = get_datetime(row.end_time)
-
                 duration = (end - start).total_seconds() / 3600
                 row.duration = round(duration, 2)
 
@@ -61,7 +69,7 @@ class InternalTask(Document):
             if old.status in ["Approved", "In Execution", "Completed", "Closed"]:
                 core_fields = [
                     "task_title",
-                    "task_category",
+                    "task_catagory",
                     "priority",
                     "requested_by",
                     "department"
@@ -74,21 +82,25 @@ class InternalTask(Document):
     # 6️⃣ Maker-Checker rule
     def check_maker_checker(self):
         if self.status == "Approved" and self.requested_by:
-            requester_user = frappe.db.get_value("Employee", self.requested_by, "user_id")
+            requester_user = frappe.db.get_value(
+                "Employee",
+                self.requested_by,
+                "user_id"
+            )
             if requester_user == frappe.session.user:
                 frappe.throw("Maker cannot approve their own task")
 
     # 7️⃣ SLA Breach flag
     def set_sla_breach(self):
-        self.sla_breached = 0  # default reset
+        self.sla_breached = 0
 
         if self.sla_due_date and self.status not in ["Completed", "Closed"]:
             if getdate(today()) >= getdate(self.sla_due_date):
                 self.sla_breached = 1
 
-def update_sla_breach_for_tasks():
-    from frappe.utils import getdate, today
 
+# 🔁 Daily scheduled SLA update
+def update_sla_breach_for_tasks():
     tasks = frappe.get_all(
         "Internal Task",
         fields=["name", "sla_due_date", "status"]
@@ -109,3 +121,38 @@ def update_sla_breach_for_tasks():
             "sla_breached",
             breached
         )
+
+
+def get_permission_query_conditions(user):
+    if not user:
+        user = frappe.session.user
+
+    # System Manager → full access
+    if "System Manager" in frappe.get_roles(user):
+        return None
+
+    # Get employee of user
+    employee = frappe.db.get_value(
+        "Employee",
+        {"user_id": user},
+        "name"
+    )
+
+    conditions = []
+
+    # Requester → own tasks
+    if "Requester" in frappe.get_roles(user):
+        conditions.append(f"`tabInternal Task`.requested_by = '{employee}'")
+
+    # Reviewer → pending review tasks
+    if "Reviewer" in frappe.get_roles(user):
+        conditions.append("`tabInternal Task`.status = 'Pending Review'")
+
+    # Executor → assigned tasks
+    if "Executor" in frappe.get_roles(user):
+        conditions.append(f"`tabInternal Task`.assigned_executor = '{employee}'")
+
+    if conditions:
+        return " OR ".join(conditions)
+
+    return None
