@@ -9,7 +9,27 @@ class InternalTask(Document):
     def before_insert(self):
         self.set_requested_by()
 
+    def before_save(self):
+
+        # Auto SLA start when execution begins
+        if self.status == "In Execution" and not self.sla_start_date:
+            self.sla_start_date = frappe.utils.today()
+
+        # Auto completion date when completed
+        if self.status == "Completed" and not self.actual_complition_date:
+            self.actual_complition_date = frappe.utils.today()
+
+
+
+
     def validate(self):
+
+        roles = frappe.get_roles(frappe.session.user)
+
+        # 🚫 Requester must NEVER auto-assign executor
+        if "Requester" in roles and self.status in ["Draft", "Pending Review"]:
+            self.assigned_executor = None
+
         self.set_requested_by()
         self.set_sla_due_date()
         self.calculate_worklog_duration()
@@ -17,6 +37,7 @@ class InternalTask(Document):
         self.prevent_completion_without_logs()
         self.prevent_core_edit_after_approval()
         self.check_maker_checker()
+
 
     # ⭐ Auto-fill requester from logged-in user
     def set_requested_by(self):
@@ -31,7 +52,7 @@ class InternalTask(Document):
 
     # 1️⃣ SLA calculation
     def set_sla_due_date(self):
-        if self.priority and not self.sla_due_date:
+        #if self.priority and not self.sla_due_date:
             base_date = getdate(self.sla_start_date) if self.sla_start_date else getdate(today())
 
             if self.priority == "Critical":
@@ -156,3 +177,23 @@ def get_permission_query_conditions(user):
         return " OR ".join(conditions)
 
     return None
+
+@frappe.whitelist()
+def get_executor_employees(doctype, txt, searchfield, start, page_len, filters):
+
+    return frappe.db.sql("""
+        SELECT e.name, e.employee_name
+        FROM `tabEmployee` e
+        JOIN `tabHas Role` r ON r.parent = e.user_id
+        WHERE r.role = 'Executor'
+        AND e.status = 'Active'
+        AND (
+            e.name LIKE %(txt)s
+            OR e.employee_name LIKE %(txt)s
+        )
+        LIMIT %(start)s, %(page_len)s
+    """, {
+        "txt": f"%{txt}%",
+        "start": start,
+        "page_len": page_len
+    })
